@@ -1,0 +1,81 @@
+James Sy (jcs547) and Willy Swenson (wzs6)
+
+ADDITIONAL FEATURES:
+
+Background/Colors
+- To make the starry background for the game, we went into Photoshop and drew it ourselves as to avoid copyright issues
+- We used this in a GImage object, centered at one-half the game width and one-half the game height, with a size of
+  game width X game height. This GImage object was placed outside of the conditional statements in draw in Invaders so
+  that the background would always be present to give the player a sense of immersion (e.g., the screen would never flicker
+  white between states)
+- In addition, we created RGB colors in consts.py to give the life-lost, win, and lose screens a game state-appropriate mood.
+
+Multiple Waves
+- This feature presents the players with an extended gameplay experience by sending another wave if the previous one
+  is defeated.
+- Because of this, we changed our win conditions so that they are as such:
+  > Player wins if there are no remaining waves (there are 3 total)
+  > Aliens win if they cross the defense line or deplete all of the player's lives
+- Instead of always ending the game when a wave is completely destroyed, we added an attribute, _wavecount, to see if
+  the game should end (no more waves) or if the game should revert back to active (there are still waves to destroy).
+  We did this by subtracting one from _wavecount every time STATE_ACTIVE and there are no more survivors in the wave
+  (using the survivors() method in Wave), such that neither the player or aliens had won yet. 
+- Using _wavelabel, a GLabel object, we show the remaining waves while the game is active in the middle of the screen.
+
+Score Counter
+- The score counter, which is displayed while the game is playing, allows the player to see their score as they destroy
+  aliens so that the gameplay goal of achieving a high score can exist.
+- We created an attribute which we updated every time an alien was destroyed (if _track is True). Since we
+  had multiple waves, and since the score is an attribute of Wave, _lives will reset every new wave. Because
+  of this, we created an attribute in Invaders which stores the value of _lives before a new wave is created
+  and the score is wiped. Because of this, we can add this attribute, _storescore, to the score of the new wave
+  (which has a starting value of zero), so that the score carries over between waves.
+- Aliens that are closer to the ship fire bolts that the player has less time to react to. Because of this, we
+  made the aliens closer to the bottom of the screen worth more. In order to do this, we added an attribute to Wave
+  which would store the row of the most recent alien destroyed (this is _pointmultiplier). Because our rows are
+  stored from the bottom-up, a lower index corresponds to a lower row and thus a higher score. We calculate this in
+  count_score in Wave, with a maximum score per alien of 100 points, and add this to the score of the wave.
+- The score is displayed by a counter in the top-left corner of the game using a GLabel that is drawn while STATE_ACTIVE.
+- Because destroying all aliens in each of the waves constitutes the maximum score (for that specific alien format),
+  we intentionally only show the final score (created with a GLabel) on the "lose" page, as displaying it on
+  the "win" page would be redundant.
+
+Speeding Up Aliens
+- This feature lowers the time between alien steps, increasing the difficulty of the game as more aliens are
+  destroyed by making the aliens move faster (harder to hit with bolts) and also fire bolts at a higher rate.
+- This also introduces the necessity for strategy into the game, as it is beneficial to destroy aliens
+  horizontally and fire to destroy rows and not columns. This is because a stack of vertical aliens moving at
+  a high speed is difficult to hit while also difficult to evade.
+- Starting with the highest speed value, ALIEN_SPEED, each alien hit increments the time between alien steps
+  (_alienspeed) by a factor of SPEED_MULT, which we added to consts.py. We record these hits by monitoring the
+  value of _track, and change _alienspeed accordingly. 
+- In our alien movement code, stepaliens in Wave, we use the value of _alienspeed to dictate the length of time
+  between each step of the alien wave.
+
+Multiple Difficulties
+- This feature allows the player to select a difficulty in the pregame screen.
+- The difficulty is determined by a set of values in consts.py; it can be one of
+  'EASY', 'MEDIUM' or 'HARD'. In order to log the player's selection, we use a set
+  of conditionals while the state is inactive. Pressing 'q' sets the difficulty to
+  'EASY', 'w' to 'MEDIUM', and 'e' to 'HARD'. We do this by changing the attribute _difficulty
+  in app.py. When the wave is created, this difficulty is passed to the new Wave object through
+  a parameter in the Wave initializer, which then sets the difficulty as the attribute _alienspeed.
+- The attribute _alienspeed is used in the Wave method stepaliens, so that a smaller _alienspeed value
+  corresponds with a shorter time between alien steps (this increases the difficulty in the same way
+  that the "Speeding Up Aliens" feature does). 
+- We also display the difficulty selected in the pregame screen using a GLabel object assigned to _difftext
+  which is an attribute in Invaders. The color and text of _difftext also changes according to the difficulty
+  selected.
+
+Animating Aliens
+- This feature animates the aliens upon explosion.
+- To code this feature, we created two new attributes in Wave.py. These attributes are called
+ _alien_animator and _aliendestroyed. The first new attribute checks if the animator
+ is running. The second attribute stores the most recent alien that was destroyed.
+ We update this attribute in the function boltcollide_alien in Wave.py.
+- The animation works essentially exactly how the ship animator works, except that
+ the animation moves through space because it is still locked into the list of aliens
+ that are stepping.
+- We chose to animate the aliens because we developed a great understanding of coroutines
+ through trial and error while coding the animation for the ship. Animating the aliens also
+ gives the player a greater sense of satisfaction and progress throughout the game.
